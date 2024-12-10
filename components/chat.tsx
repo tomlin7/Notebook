@@ -20,15 +20,14 @@ export function Chat({ documentContent }: ChatProps) {
     e.preventDefault();
     if (!input.trim()) return;
 
-    const userMessage = { role: "user", content: input };
+    const userMessage: Message = { role: "user", content: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
 
-    // TODO: Implement chat completion with streaming
-    const assistantMessage = {
+    const assistantMessage: Message = {
       role: "assistant",
       content:
-        "This is a placeholder response. Chat functionality will be implemented soon.",
+        "If you are seeing this message, it means the app is disconnected from the server.",
     };
     setMessages((prev) => [...prev, assistantMessage]);
   };
