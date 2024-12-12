@@ -12,7 +12,7 @@ export async function generateSummary(
 ) {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-  const prompt = `Provide a comprehensive summary, don't use markdown, focus on the key points and main ideas: 
+  const prompt = `Use markdown for better readability, Headings bolder , bullet points etc . Provide a comprehensive summary, focus on the key points and main ideas: 
   ${text}`;
 
   const result = await model.generateContentStream(prompt);

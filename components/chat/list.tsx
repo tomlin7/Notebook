@@ -1,6 +1,9 @@
 import { Message } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
 import { ScrollArea } from "../ui/scroll-area";
 
 interface MessageListProps {
@@ -32,7 +35,30 @@ export function MessageList({ messages }: MessageListProps) {
                 : "bg-muted"
             }`}
           >
-            {message.content || (
+            {message.content ? (
+              <ReactMarkdown
+                rehypePlugins={[rehypeRaw, remarkGfm]}
+                components={{
+                  // tailwind
+                  table: ({ children }) => (
+                    <table className="table-auto w-full">{children}</table>
+                  ),
+                  tr: ({ children }) => (
+                    <tr className="border-b">{children}</tr>
+                  ),
+                  th: ({ children }) => (
+                    <th className="border-r border-b p-2">{children}</th>
+                  ),
+                  td: ({ children }) => (
+                    <td className="border-r border-b p-2">{children}</td>
+                  ),
+                  tbody: ({ children }) => <tbody>{children}</tbody>,
+                  thead: ({ children }) => <thead>{children}</thead>,
+                }}
+              >
+                {message.content}
+              </ReactMarkdown>
+            ) : (
               <div className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>Thinking...</span>
