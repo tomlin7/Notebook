@@ -16,7 +16,7 @@ export function formatChatHistory(
   Previous conversation:
   ${formattedMessages}
   
-  Use markdown formatting for better readability,, Headings bolder , bullet points etc.
+  Use markdown formatting for better readability, headings bolder, bullet points etc.
   Don't get sidetracked. Be concise and to the point.
   Apologize for any mistakes and ask for clarification if needed, don't provide false information.
   Point out if the asked question is out of scope and provide a helpful, accurate response based on the document context and previous conversation.`;

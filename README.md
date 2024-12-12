@@ -12,7 +12,7 @@ So, at uni, we were handed chonky books and paper work, which were very ineffici
 
 ## Building from source
 
-Set the `NEXT_PUBLIC_GEMINI_API_KEY` environment variable to your Google AI API key.
+Create a `.env.local` in root directory. Set the `NEXT_PUBLIC_GEMINI_API_KEY` environment variable to your Google AI API key.
 
 ```bash
 bun i

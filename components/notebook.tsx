@@ -1,7 +1,5 @@
 "use client";
 
-import ReactMarkdown from "react-markdown";
-import rehypeRaw from "rehype-raw";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,9 +7,13 @@ import { generateSummary } from "@/lib/gemini";
 import { useChatStore } from "@/lib/store";
 import { FileText, Loader2, Upload } from "lucide-react";
 import "pdfjs-dist/build/pdf.worker.mjs";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
+import remarkGfm from "remark-gfm";
 import { ChatPanel } from "./chat/panel";
+import { ScrollArea } from "./ui/scroll-area";
 
 export function Notebook() {
   const [files, setFiles] = useState<Array<{ name: string; content: string }>>(
@@ -23,6 +25,14 @@ export function Notebook() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeFile, setActiveFile] = useState<string | null>(null);
   const { createSession } = useChatStore();
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [summaries]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
@@ -129,14 +139,61 @@ export function Notebook() {
             </TabsList>
 
             <TabsContent value="summary" className="mt-4">
-              
-            <div className="h-[400px] text-foreground overflow-auto">
-            <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-            {summaries.find((s) => s.name === activeFile)?.summary || "No summary available"}
-            </ReactMarkdown>
-            </div>
-
-
+              {/* <div className="h-[400px] text-foreground"> */}
+              <ScrollArea ref={scrollRef} className="flex-1 p-4 h-[600px]">
+                <ReactMarkdown
+                  rehypePlugins={[rehypeRaw, remarkGfm]}
+                  components={{
+                    // tailwind
+                    h1: ({ children }) => (
+                      <h1 className="font-bold mb-4 text-2xl">{children}</h1>
+                    ),
+                    h2: ({ children }) => (
+                      <h2 className="font-bold mb-3 text-xl">{children}</h2>
+                    ),
+                    h3: ({ children }) => (
+                      <h3 className="font-bold mb-2 text-lg">{children}</h3>
+                    ),
+                    code: ({ children }) => (
+                      <code className="bg-zinc-500 px-1.5 py-0.5 rounded text-sm">
+                        {children}
+                      </code>
+                    ),
+                    pre: ({ children }) => (
+                      <pre className="bg-muted p-4 rounded-lg mb-4 overflow-x-auto">
+                        {children}
+                      </pre>
+                    ),
+                    p: ({ children }) => <p className="mb-4">{children}</p>,
+                    ul: ({ children }) => (
+                      <ul className="list-disc ml-6 mb-4">{children}</ul>
+                    ),
+                    ol: ({ children }) => (
+                      <ol className="list-decimal ml-6 mb-4">{children}</ol>
+                    ),
+                    li: ({ children }) => <li className="mb-1">{children}</li>,
+                    blockquote: ({ children }) => (
+                      <blockquote className="border-l-4 border-muted pl-4 italic mb-4">
+                        {children}
+                      </blockquote>
+                    ),
+                    a: ({ href, children }) => (
+                      <a
+                        href={href}
+                        className="text-primary hover:underline"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {children}
+                      </a>
+                    ),
+                  }}
+                >
+                  {summaries.find((s) => s.name === activeFile)?.summary ||
+                    "No summary available"}
+                </ReactMarkdown>
+              </ScrollArea>
+              {/* </div> */}
             </TabsContent>
 
             <TabsContent value="chat" className="mt-4">
