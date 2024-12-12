@@ -1,5 +1,7 @@
 "use client";
 
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -127,10 +129,14 @@ export function Notebook() {
             </TabsList>
 
             <TabsContent value="summary" className="mt-4">
-              <div className="h-[400px] text-foreground">
-                {summaries.find((s) => s.name === activeFile)?.summary ||
-                  "No summary available"}
-              </div>
+              
+            <div className="h-[400px] text-foreground overflow-auto">
+            <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+            {summaries.find((s) => s.name === activeFile)?.summary || "No summary available"}
+            </ReactMarkdown>
+            </div>
+
+
             </TabsContent>
 
             <TabsContent value="chat" className="mt-4">

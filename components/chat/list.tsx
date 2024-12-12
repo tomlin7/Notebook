@@ -2,6 +2,8 @@ import { Message } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { ScrollArea } from "../ui/scroll-area";
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 
 interface MessageListProps {
   messages: Message[];
@@ -32,7 +34,11 @@ export function MessageList({ messages }: MessageListProps) {
                 : "bg-muted"
             }`}
           >
-            {message.content || (
+            {message.content ? (
+              <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                {message.content}
+              </ReactMarkdown>
+            ) : (
               <div className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>Thinking...</span>
