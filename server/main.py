@@ -26,7 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-llm = GoogleGenerativeAI(model="gemini-1.5-pro", api_key=os.getenv("GOOGLE_API_KEY"))
+llm = GoogleGenerativeAI(model="gemini-1.5-flash", api_key=os.getenv("GOOGLE_API_KEY"))
 
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=2000,
