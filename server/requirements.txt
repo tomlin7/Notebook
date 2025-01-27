@@ -1,0 +1,7 @@
+"fastapi[standard]"
+python-multipart
+langchain 
+langchain-google-genai
+python-dotenv
+pydantic
+pypdf2

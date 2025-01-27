@@ -1,30 +1,27 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { formatChatHistory } from "./chat";
 import { Message } from "./types";
 
-const genAI = new GoogleGenerativeAI(
-  process.env.NEXT_PUBLIC_GEMINI_API_KEY || ""
-);
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export async function generateSummary(
   text: string,
   onChunk: (chunk: string) => void
 ) {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const formData = new FormData();
+  const file = new Blob([text], { type: "text/plain" });
+  formData.append("file", file, "document.txt");
 
-  const prompt = `Use markdown for better readability, Headings bolder , bullet points etc . Provide a comprehensive summary, focus on the key points and main ideas: 
-  ${text}`;
+  const response = await fetch(`${API_URL}/summarize`, {
+    method: "POST",
+    body: formData,
+  });
 
-  const result = await model.generateContentStream(prompt);
-  let fullResponse = "";
-
-  for await (const chunk of result.stream) {
-    const chunkText = chunk.text();
-    fullResponse += chunkText;
-    onChunk(fullResponse);
+  if (!response.ok) {
+    throw new Error("Failed to generate summary");
   }
 
-  return fullResponse;
+  const data = await response.json();
+  onChunk(data.summary);
+  return data.summary;
 }
 
 export async function chatWithDocument(
@@ -32,17 +29,26 @@ export async function chatWithDocument(
   documentContext: string,
   onChunk: (chunk: string) => void
 ) {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-  const formattedPrompt = formatChatHistory(messages.slice(), documentContext);
+  const response = await fetch(`${API_URL}/chat`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messages: messages,
+      context: documentContext,
+    }),
+  });
 
-  const result = await model.generateContentStream(formattedPrompt);
-  let fullResponse = "";
+  console.log("reached here!");
 
-  for await (const chunk of result.stream) {
-    const chunkText = chunk.text();
-    fullResponse += chunkText;
-    onChunk(fullResponse);
+  if (!response.ok) {
+    throw new Error("Failed to chat with document");
   }
 
-  return fullResponse;
+  console.log(response);
+
+  const data = await response.json();
+  onChunk(data.response);
+  return data.response;
 }
