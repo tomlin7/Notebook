@@ -1,4 +1,4 @@
-"fastapi[standard]"
+fastapi[standard]
 python-multipart
 langchain 
 langchain-google-genai
