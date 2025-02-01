@@ -3,7 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { generateSummary } from "@/lib/gemini";
+import { toast } from "@/hooks/use-toast";
+import { generatePodcast, generateSummary } from "@/lib/gemini";
 import { useChatStore } from "@/lib/store";
 import { FileText, Loader2, Upload } from "lucide-react";
 import "pdfjs-dist/build/pdf.worker.mjs";
@@ -13,6 +14,7 @@ import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { ChatPanel } from "./chat/panel";
+import { PodcastPlayer } from "./podcast";
 import { ScrollArea } from "./ui/scroll-area";
 
 export function Notebook() {
@@ -20,7 +22,7 @@ export function Notebook() {
     []
   );
   const [summaries, setSummaries] = useState<
-    Array<{ name: string; summary: string }>
+    Array<{ name: string; summary: string; audio?: string }>
   >([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeFile, setActiveFile] = useState<string | null>(null);
@@ -33,6 +35,37 @@ export function Notebook() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [summaries]);
+
+  const generatePodcastForSummary = async (
+    fileName: string,
+    summary: string
+  ) => {
+    try {
+      const audio = await generatePodcast(summary, (audio) => {
+        setSummaries((prev) => {
+          const existing = prev.findIndex((s) => s.name === fileName);
+          if (existing >= 0) {
+            const updated = [...prev];
+            updated[existing] = {
+              ...updated[existing],
+              audio,
+            };
+            return updated;
+          }
+          return prev;
+        });
+      });
+      return audio;
+    } catch (error) {
+      console.error("Error generating podcast:", error);
+      toast({
+        title: "Podcast Generation Failed",
+        description:
+          "Failed to generate the podcast. The summary is still available.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
@@ -65,6 +98,7 @@ export function Notebook() {
         setFiles((prev) => [...prev, { name: file.name, content: text }]);
 
         try {
+          // TODO: include file name in the summary
           const summary = await generateSummary(text, (chunk) => {
             setSummaries((prev) => {
               const existing = prev.findIndex((s) => s.name === file.name);
@@ -77,6 +111,8 @@ export function Notebook() {
             });
           });
 
+          generatePodcastForSummary(file.name, summary);
+
           createSession(file.name, text);
           setActiveFile(file.name);
         } catch (error) {
@@ -87,6 +123,10 @@ export function Notebook() {
       setIsProcessing(false);
     },
   });
+
+  const activeSummary = activeFile
+    ? summaries.find((s) => s.name === activeFile)
+    : null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -141,6 +181,9 @@ export function Notebook() {
             <TabsContent value="summary" className="mt-4">
               {/* <div className="h-[400px] text-foreground"> */}
               <ScrollArea ref={scrollRef} className="flex-1 p-4 h-[600px]">
+                {activeSummary?.audio && (
+                  <PodcastPlayer audioSrc={activeSummary.audio} />
+                )}
                 <ReactMarkdown
                   rehypePlugins={[rehypeRaw, remarkGfm]}
                   components={{
@@ -189,8 +232,7 @@ export function Notebook() {
                     ),
                   }}
                 >
-                  {summaries.find((s) => s.name === activeFile)?.summary ||
-                    "No summary available"}
+                  {activeSummary?.summary || "No summary available"}
                 </ReactMarkdown>
               </ScrollArea>
               {/* </div> */}
