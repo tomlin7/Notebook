@@ -5,3 +5,5 @@ langchain-google-genai
 python-dotenv
 pydantic
 pypdf2
+TTS
+pydub
