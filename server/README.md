@@ -13,3 +13,10 @@ pip install -r requirements.txt
 ```
 fastapi run main.py
 ```
+
+## Render Configuration
+
+```
+pip install -r requirements.txt; python vits.py
+fastapi run main.py
+```
