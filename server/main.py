@@ -1,14 +1,12 @@
-import json
-
-import uvicorn
-from chains import CHAT, PODCAST, SUMMARY
+# import uvicorn
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from llm import LLM
-from models import ChatRequest, PodcastRequest
-from pdf import extract_text_from_pdf
-from synthesis import generate_audio
+
+from .chains import CHAT, PODCAST, SUMMARY
+from .models import ChatRequest, PodcastRequest
+from .pdf import extract_text_from_pdf
+from .synthesis import generate_audio
 
 app = FastAPI()
 
@@ -80,5 +78,5 @@ async def chat_with_document(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# if __name__ == "__main__":
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
