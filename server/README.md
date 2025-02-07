@@ -20,3 +20,17 @@ fastapi run main.py
 pip install -r requirements.txt; python vits.py
 fastapi run main.py
 ```
+
+### Docker
+
+```
+docker run billyeatcookies/notebook:latest
+```
+
+#### Development with Docker
+
+```
+docker compose up --build
+docker compose build
+docker compose push
+```

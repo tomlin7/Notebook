@@ -1,8 +1,7 @@
 from langchain.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-
-from .llm import LLM
-from .parsers import PODCAST_PARSER
+from llm import LLM
+from parsers import PODCAST_PARSER
 
 __all__ = ["SUMMARY", "PODCAST", "CHAT"]
 

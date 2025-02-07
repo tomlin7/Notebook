@@ -1,12 +1,11 @@
 # import uvicorn
+from chains import CHAT, PODCAST, SUMMARY
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-
-from .chains import CHAT, PODCAST, SUMMARY
-from .models import ChatRequest, PodcastRequest
-from .pdf import extract_text_from_pdf
-from .synthesis import generate_audio
+from models import ChatRequest, PodcastRequest
+from pdf import extract_text_from_pdf
+from synthesis import generate_audio
 
 app = FastAPI()
 
