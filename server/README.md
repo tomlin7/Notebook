@@ -24,7 +24,7 @@ fastapi run main.py
 ### Docker
 
 ```
-docker run billyeatcookies/notebook:latest
+docker run -e PORT=8080 billyeatcookies/notebook:latest
 ```
 
 #### Development with Docker
