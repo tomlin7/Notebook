@@ -3,8 +3,8 @@
 ARG PYTHON_VERSION=3.10.11
 FROM ghcr.io/coqui-ai/tts-cpu:latest as base
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
@@ -20,7 +20,9 @@ WORKDIR /app
 
 # USER appuser
 
-RUN apt-get update && apt-get install -y ffmpeg 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ffmpeg && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN --mount=type=cache,target=/root/.cache/pip \
     --mount=type=bind,source=requirements.txt,target=requirements.txt \
@@ -29,7 +31,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 COPY . .
 
 RUN python vits.py
-
 ENTRYPOINT [""]
 
 EXPOSE 8000
