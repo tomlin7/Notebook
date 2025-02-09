@@ -1,25 +1,8 @@
-# syntax=docker/dockerfile:1
-
-ARG PYTHON_VERSION=3.10.11
 FROM ghcr.io/coqui-ai/tts-cpu:latest AS base
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
+ENV PORT=8080
+ENV PYTHONDONTWRITEBYTECODE=1
 WORKDIR /app
-
-# ARG UID=10001
-# RUN adduser \
-#     --disabled-password \
-#     --gecos "" \
-#     --home "/nonexistent" \
-#     --shell "/sbin/nologin" \
-#     --no-create-home \
-#     --uid "${UID}" \
-#     appuser
-
-# USER appuser
-
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ffmpeg && \
     rm -rf /var/lib/apt/lists/*
@@ -30,5 +13,4 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 COPY . .
 
-RUN python vits.py
-ENTRYPOINT ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+ENTRYPOINT uvicorn main:app --host 0.0.0.0 --port ${PORT}
