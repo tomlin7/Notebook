@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 ARG PYTHON_VERSION=3.10.11
-FROM ghcr.io/coqui-ai/tts-cpu:latest as base
+FROM ghcr.io/coqui-ai/tts-cpu:latest AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
@@ -31,7 +31,4 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 COPY . .
 
 RUN python vits.py
-ENTRYPOINT [""]
-
-EXPOSE ${PORT}
-CMD uvicorn 'main:app' --host=0.0.0.0 --port=${PORT}
+ENTRYPOINT ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
