@@ -18,21 +18,11 @@ import { PodcastPlayer } from "./podcast";
 import { ScrollArea } from "./ui/scroll-area";
 
 export function Notebook() {
-  const [files, setFiles] = useState<Array<{ name: string; content: string }>>(
-    []
-  );
-  const [summaries, setSummaries] = useState<
-    Array<{
-      name: string;
-      summary: string;
-      audio?: string;
-      isGeneratingPodcast?: boolean;
-    }>
-  >([]);
-  const [isProcessing, setIsProcessing] = useState(false);
   const [activeFile, setActiveFile] = useState<string | null>(null);
-  const { createSession } = useChatStore();
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  const { addDocument, updateDocument, getDocument, documents, createSession } =
+    useChatStore();
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -40,60 +30,30 @@ export function Notebook() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [summaries]);
+  }, [documents]);
 
   const generatePodcastForSummary = async (
     fileName: string,
     summary: string
   ) => {
     try {
-      setSummaries((prev) => {
-        const existing = prev.findIndex((s) => s.name === fileName);
-        if (existing >= 0) {
-          const updated = [...prev];
-          updated[existing] = {
-            ...updated[existing],
-            isGeneratingPodcast: true,
-          };
-          return updated;
-        }
-        return prev;
-      });
+      updateDocument(fileName, { isGeneratingPodcast: true });
 
       const audio = await generatePodcast(summary, (audio) => {
-        setSummaries((prev) => {
-          const existing = prev.findIndex((s) => s.name === fileName);
-          if (existing >= 0) {
-            const updated = [...prev];
-            updated[existing] = {
-              ...updated[existing],
-              audio,
-              isGeneratingPodcast: false,
-            };
-            return updated;
-          }
-          return prev;
+        updateDocument(fileName, {
+          audio,
+          isGeneratingPodcast: false,
         });
       });
+
       return audio;
     } catch (error) {
       console.error("Error generating podcast:", error);
-      setSummaries((prev) => {
-        const existing = prev.findIndex((s) => s.name === fileName);
-        if (existing >= 0) {
-          const updated = [...prev];
-          updated[existing] = {
-            ...updated[existing],
-            isGeneratingPodcast: false,
-          };
-          return updated;
-        }
-        return prev;
-      });
+      updateDocument(fileName, { isGeneratingPodcast: false });
       toast({
         title: "Podcast Generation Failed",
         description:
-          "Failed to generate the podcast. The summary is still available.",
+          "Failed to generate the podcast audio. The summary is still available.",
         variant: "destructive",
       });
     }
@@ -127,22 +87,14 @@ export function Notebook() {
           text = await file.text();
         }
 
-        setFiles((prev) => [...prev, { name: file.name, content: text }]);
+        addDocument({
+          name: file.name,
+          content: text,
+        });
 
         try {
           const summary = await generateSummary(text, (summary) => {
-            setSummaries((prev) => {
-              const existing = prev.findIndex((s) => s.name === file.name);
-              if (existing >= 0) {
-                const updated = [...prev];
-                updated[existing] = {
-                  name: file.name,
-                  summary,
-                };
-                return updated;
-              }
-              return [...prev, { name: file.name, summary }];
-            });
+            updateDocument(file.name, { summary });
           });
 
           generatePodcastForSummary(file.name, summary);
@@ -163,9 +115,7 @@ export function Notebook() {
     },
   });
 
-  const activeSummary = activeFile
-    ? summaries.find((s) => s.name === activeFile)
-    : null;
+  const activeDocument = activeFile ? getDocument(activeFile) : null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -191,14 +141,15 @@ export function Notebook() {
 
         <div className="h-[300px] mt-4 space-y-2 overflow-hidden">
           <div className="space-y-1">
-            {files.map((file, index) => (
+            {documents.map((doc, index) => (
               <Button
                 key={index}
-                variant={activeFile === file.name ? "secondary" : "ghost"}
+                variant={activeFile === doc.name ? "secondary" : "ghost"}
                 className="w-full justify-start gap-2 px-3"
+                onClick={() => setActiveFile(doc.name)}
               >
                 <FileText className="h-4 w-4 shrink-0" />
-                <span className="truncate">{file.name}</span>
+                <span className="truncate">{doc.name}</span>
               </Button>
             ))}
           </div>
@@ -220,16 +171,15 @@ export function Notebook() {
 
             <TabsContent value="summary" className="mt-4">
               <ScrollArea ref={scrollRef} className="flex-1 p-4 h-[600px]">
-                {activeSummary && (
+                {activeDocument && (
                   <PodcastPlayer
-                    audioSrc={activeSummary.audio || ""}
-                    isLoading={activeSummary.isGeneratingPodcast}
+                    audioSrc={activeDocument.audio || ""}
+                    isLoading={activeDocument.isGeneratingPodcast}
                   />
                 )}
                 <ReactMarkdown
                   rehypePlugins={[rehypeRaw, remarkGfm]}
                   components={{
-                    // tailwind
                     h1: ({ children }) => (
                       <h1 className="font-bold mb-4 text-2xl">{children}</h1>
                     ),
@@ -274,7 +224,7 @@ export function Notebook() {
                     ),
                   }}
                 >
-                  {activeSummary?.summary || "No summary available"}
+                  {activeDocument?.summary || "No summary available"}
                 </ReactMarkdown>
               </ScrollArea>
               {/* </div> */}

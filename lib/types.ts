@@ -9,3 +9,17 @@ export interface ChatSession {
   context: string;
   messages: Message[];
 }
+
+export interface DocumentData {
+  name: string;
+  content: string;
+  summary?: string;
+  audio?: string;
+  isGeneratingPodcast?: boolean;
+}
+
+export interface AppState {
+  documents: DocumentData[];
+  sessions: Record<string, ChatSession>;
+  currentSession: string | null;
+}
