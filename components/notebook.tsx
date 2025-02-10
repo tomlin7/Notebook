@@ -189,18 +189,19 @@ export function Notebook() {
           </p>
         </div>
 
-        <div className="h-[300px] mt-4 space-y-2">
-          {files.map((file, index) => (
-            <Button
-              key={index}
-              variant={activeFile === file.name ? "secondary" : "ghost"}
-              className="w-full justify-start gap-2"
-              onClick={() => setActiveFile(file.name)}
-            >
-              <FileText className="h-4 w-4" />
-              {file.name}
-            </Button>
-          ))}
+        <div className="h-[300px] mt-4 space-y-2 overflow-hidden">
+          <div className="space-y-1">
+            {files.map((file, index) => (
+              <Button
+                key={index}
+                variant={activeFile === file.name ? "secondary" : "ghost"}
+                className="w-full justify-start gap-2 px-3"
+              >
+                <FileText className="h-4 w-4 shrink-0" />
+                <span className="truncate">{file.name}</span>
+              </Button>
+            ))}
+          </div>
         </div>
       </Card>
 
