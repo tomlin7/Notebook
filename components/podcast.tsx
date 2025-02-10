@@ -1,4 +1,4 @@
-import { Pause, Play, Volume2, VolumeX } from "lucide-react";
+import { Download, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
@@ -6,9 +6,10 @@ import { Slider } from "./ui/slider";
 
 interface PodcastPlayerProps {
   audioSrc: string;
+  isLoading?: boolean;
 }
 
-export function PodcastPlayer({ audioSrc }: PodcastPlayerProps) {
+export function PodcastPlayer({ audioSrc, isLoading }: PodcastPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -83,6 +84,42 @@ export function PodcastPlayer({ audioSrc }: PodcastPlayerProps) {
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
+  const handleDownload = () => {
+    const a = document.createElement("a");
+    a.href = audioSrc;
+    a.download = "podcast.wav";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="p-4 mb-6 bg-card animate-pulse">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <span>Composing a podcast for you...</span>
+            <div className="flex items-center">
+              {/* <div className="w-12 h-4 bg-muted rounded" /> */}
+              <div className="mx-2 flex-1 h-2 bg-muted rounded" />
+              <div className="w-12 h-4 bg-muted rounded" />
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-muted rounded-full" />
+                <div className="w-24 h-2 bg-muted rounded" />
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 bg-muted rounded-full" />
+                <div className="w-8 h-8 bg-muted rounded-md" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="p-4 mb-6 bg-card">
       <div className="space-y-4">
@@ -137,6 +174,14 @@ export function PodcastPlayer({ audioSrc }: PodcastPlayerProps) {
                 ) : (
                   <Play className="h-4 w-4" />
                 )}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleDownload}
+                className="hover:bg-accent hover:text-accent-foreground"
+              >
+                <Download className="h-4 w-4" />
               </Button>
             </div>
           </div>

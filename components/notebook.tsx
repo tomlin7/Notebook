@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { generatePodcast, generateSummary } from "@/lib/gemini";
 import { useChatStore } from "@/lib/store";
 import { FileText, Loader2, Upload } from "lucide-react";
@@ -22,11 +22,17 @@ export function Notebook() {
     []
   );
   const [summaries, setSummaries] = useState<
-    Array<{ name: string; summary: string; audio?: string }>
+    Array<{
+      name: string;
+      summary: string;
+      audio?: string;
+      isGeneratingPodcast?: boolean;
+    }>
   >([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeFile, setActiveFile] = useState<string | null>(null);
   const { createSession } = useChatStore();
+  const { toast } = useToast();
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -41,6 +47,19 @@ export function Notebook() {
     summary: string
   ) => {
     try {
+      setSummaries((prev) => {
+        const existing = prev.findIndex((s) => s.name === fileName);
+        if (existing >= 0) {
+          const updated = [...prev];
+          updated[existing] = {
+            ...updated[existing],
+            isGeneratingPodcast: true,
+          };
+          return updated;
+        }
+        return prev;
+      });
+
       const audio = await generatePodcast(summary, (audio) => {
         setSummaries((prev) => {
           const existing = prev.findIndex((s) => s.name === fileName);
@@ -49,6 +68,7 @@ export function Notebook() {
             updated[existing] = {
               ...updated[existing],
               audio,
+              isGeneratingPodcast: false,
             };
             return updated;
           }
@@ -58,6 +78,18 @@ export function Notebook() {
       return audio;
     } catch (error) {
       console.error("Error generating podcast:", error);
+      setSummaries((prev) => {
+        const existing = prev.findIndex((s) => s.name === fileName);
+        if (existing >= 0) {
+          const updated = [...prev];
+          updated[existing] = {
+            ...updated[existing],
+            isGeneratingPodcast: false,
+          };
+          return updated;
+        }
+        return prev;
+      });
       toast({
         title: "Podcast Generation Failed",
         description:
@@ -98,16 +130,18 @@ export function Notebook() {
         setFiles((prev) => [...prev, { name: file.name, content: text }]);
 
         try {
-          // TODO: include file name in the summary
-          const summary = await generateSummary(text, (chunk) => {
+          const summary = await generateSummary(text, (summary) => {
             setSummaries((prev) => {
               const existing = prev.findIndex((s) => s.name === file.name);
               if (existing >= 0) {
                 const updated = [...prev];
-                updated[existing] = { name: file.name, summary: chunk };
+                updated[existing] = {
+                  name: file.name,
+                  summary,
+                };
                 return updated;
               }
-              return [...prev, { name: file.name, summary: chunk }];
+              return [...prev, { name: file.name, summary }];
             });
           });
 
@@ -117,6 +151,11 @@ export function Notebook() {
           setActiveFile(file.name);
         } catch (error) {
           console.error("Error processing file:", error);
+          toast({
+            title: "Processing Error",
+            description: "Failed to process the document. Please try again.",
+            variant: "destructive",
+          });
         }
       }
 
@@ -179,10 +218,12 @@ export function Notebook() {
             </TabsList>
 
             <TabsContent value="summary" className="mt-4">
-              {/* <div className="h-[400px] text-foreground"> */}
               <ScrollArea ref={scrollRef} className="flex-1 p-4 h-[600px]">
-                {activeSummary?.audio && (
-                  <PodcastPlayer audioSrc={activeSummary.audio} />
+                {activeSummary && (
+                  <PodcastPlayer
+                    audioSrc={activeSummary.audio || ""}
+                    isLoading={activeSummary.isGeneratingPodcast}
+                  />
                 )}
                 <ReactMarkdown
                   rehypePlugins={[rehypeRaw, remarkGfm]}
