@@ -1,20 +1,24 @@
-# Notebook
+# Notebook: Turn study notes into podcasts
 
-Note Taking & Research Assistant Powered by AI. [Open a Notebook](https://notebookxyz.vercel.app).
+Notebook is an AI-powered platform that helps you explore your documents by generating exclusive podcast episodes (with 2 guests), concise summaries, and interactive chat sessions. It uses Coqui TTS models for the audio generation and Google Gemini 2.0 models for text summarization.
+[Open Notebook](https://notebookxyz.vercel.app).
 
 ![preview](https://github.com/user-attachments/assets/290741c8-aed0-4827-87ad-807b94b2cfdf)
 
-So, at uni, we were handed chonky books and paper work, which were very inefficient to read and understand. Why not make a RAG tool to simulate asking direct questions to the document? This is where **Notebook** comes in. It can summarize documents, answer questions, and chat with you about the document.
-
 - Upload documents (PDF, TXT)
-- Notebook will summarize the uploaded document.
-- Switch to the chat tab, then start talking to the document.
+- Notebook will instantly summarize the uploaded document.
+- Wait for few seconds and the podcast episode will pop up in the main page as well (this can take upto a minute)
+- For chat switch to the chat tab, then start talking to the document.
 
-## Building from source
+## Running the server
 
-Create a `.env.local` in root directory. Set the `NEXT_PUBLIC_GEMINI_API_KEY` environment variable to your Google AI API key.
+Create a `.env` file. Set `GEMINI_API_KEY` variable to your Google AI API key.
 
 ```bash
 bun i
 bun run dev
 ```
+
+## Planned
+- Optimize podcast generation 
+- Real time podcast session where user can join in podcasts with the guests
