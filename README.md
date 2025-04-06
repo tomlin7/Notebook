@@ -3,7 +3,10 @@
 Notebook is an AI-powered platform that helps you explore your documents by generating exclusive podcast episodes (with 2 guests), concise summaries, and interactive chat sessions. It uses Coqui TTS models for the audio generation and Google Gemini 2.0 models for text summarization.
 [Open Notebook](https://notebookxyz.vercel.app).
 
-![preview](https://github.com/user-attachments/assets/290741c8-aed0-4827-87ad-807b94b2cfdf)
+
+https://github.com/user-attachments/assets/993e458b-a74e-4968-94be-31745ef3e8e8
+
+
 
 - Upload documents (PDF, TXT)
 - Notebook will instantly summarize the uploaded document.
